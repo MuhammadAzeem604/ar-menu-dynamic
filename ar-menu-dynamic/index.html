@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Menu - AR Dining Experience</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="table-info">
+                <span class="table-icon">🍽️</span>
+                <span id="table-indicator">Table: Detecting...</span>
+            </div>
+            <button class="waiter-btn" onclick="callWaiter()">
+                <span>🔔</span>
+                <span>Call Waiter</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Delicious Food, <span class="gradient-text">AR Experience</span></h1>
+            <p class="hero-subtitle">View our dishes in 3D before you order</p>
+        </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs">
+        <a href="#burgers" class="tab active" data-category="burgers">
+            <span class="tab-icon">🍔</span>
+            <span>Burgers</span>
+        </a>
+        <a href="#pizza" class="tab" data-category="pizza">
+            <span class="tab-icon">🍕</span>
+            <span>Pizza</span>
+        </a>
+        <a href="#sides" class="tab" data-category="sides">
+            <span class="tab-icon">🍟</span>
+            <span>Sides</span>
+        </a>
+        <a href="#drinks" class="tab" data-category="drinks">
+            <span class="tab-icon">🥤</span>
+            <span>Drinks</span>
+        </a>
+    </div>
+
+    <!-- Menu Container -->
+    <div class="container" id="menu-list"></div>
+
+    <!-- Floating Cart Button -->
+    <a href="track.html" class="floating-cart" id="floating-cart">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-text">View Cart</span>
+        <span class="cart-badge" id="cart-count">0</span>
+    </a>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Update Table Indicator
+        document.getElementById('table-indicator').innerText = `Table ${currentTable}`;
+
+        // Render Menu
+        const container = document.getElementById('menu-list');
+        
+        // Loop through Categories
+        for (const category in MENU_DATA) {
+            // Add Category Section
+            const categoryTitle = category.charAt(0).toUpperCase() + category.slice(1);
+            container.innerHTML += `
+                <div class="category-section" id="${category}">
+                    <h2 class="category-title">${categoryTitle}</h2>
+                    <div class="category-grid" id="${category}-grid"></div>
+                </div>
+            `;
+            
+            const grid = document.getElementById(`${category}-grid`);
+            
+            // Add Items
+            MENU_DATA[category].forEach(item => {
+                const hasAR = item.model_glb ? '<span class="ar-badge">🧊 3D AR</span>' : '';
+                grid.innerHTML += `
+                    <div class="dish-card" onclick="window.location.href='product.html?id=${item.id}'">
+                        <div class="dish-image-container">
+                            <img src="${item.image}" 
+                                 class="dish-img" 
+                                 alt="${item.name}"
+                                 loading="lazy"
+                                 decoding="async">
+                            ${hasAR}
+                        </div>
+                        <div class="dish-info">
+                            <h3 class="dish-name">${item.name}</h3>
+                            <p class="dish-desc">${item.description || ''}</p>
+                            <div class="dish-footer">
+                                <span class="price-tag">Rs. ${item.price}</span>
+                                <button class="quick-add-btn" onclick="event.stopPropagation(); addToCart('${item.id}')">
+                                    Add +
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Tab Navigation
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const category = tab.getAttribute('data-category');
+                document.getElementById(category).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Call Waiter Function
+        function callWaiter() {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = '✅ Waiter has been notified!';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

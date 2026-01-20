@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Smart Menu</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <style>
+        .product-page {
+            background: var(--bg);
+            min-height: 100vh;
+        }
+
+        .product-header {
+            position: relative;
+            background: white;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .product-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .ar-overlay-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-weight: 700;
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 5;
+            font-size: 0.9em;
+        }
+
+        .product-content {
+            max-width: 800px;
+            margin: -30px auto 0;
+            background: white;
+            border-radius: 30px 30px 0 0;
+            padding: 30px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .product-badge {
+            display: inline-block;
+            background: var(--gradient);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .product-title {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .product-price {
+            font-size: 2em;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .product-description {
+            line-height: 1.8;
+            color: var(--text-light);
+            font-size: 1.05em;
+            margin-bottom: 30px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+        }
+
+        .btn-3d {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-3d::before {
+            content: '🧊';
+            margin-right: 8px;
+        }
+
+        .btn-3d:hover {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .ar-instruction {
+            background: #FFF4ED;
+            padding: 20px;
+            border-radius: 16px;
+            margin-top: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .ar-instruction h4 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .ar-instruction p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .recommendations-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f1f3f5;
+        }
+
+        .recommendations-section h3 {
+            font-size: 1.5em;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .recommendation-card {
+            display: flex;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .recommendation-card:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .recommendation-card img {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .recommendation-info {
+            flex: 1;
+        }
+
+        .recommendation-info h4 {
+            font-size: 1.1em;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .recommendation-info .price {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .add-rec-btn {
+            align-self: center;
+            padding: 8px 16px;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Loading spinner for 3D */
+        .model-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 20;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="product-page">
+    <div class="product-header">
+        <a href="index.html" class="back-btn">←</a>
+        <div class="product-image-wrapper" id="visual-container">
+            <!-- Regular image loads first by default -->
+        </div>
+    </div>
+
+    <div class="product-content">
+        <div id="product-badge"></div>
+        <h1 class="product-title" id="p-name">Loading...</h1>
+        <div class="product-price" id="p-price">...</div>
+        <p class="product-description" id="p-desc">...</p>
+
+        <div class="product-actions">
+            <button id="btn-3d" class="btn btn-3d hidden">
+                View in 3D
+            </button>
+            <button id="btn-ar" class="btn btn-outline hidden">
+                📷 View in AR
+            </button>
+            <button id="btn-add" class="btn btn-primary">
+                🛒 Add to Order
+            </button>
+        </div>
+
+        <div id="ar-instructions" style="display:none;" class="ar-instruction">
+            <h4>🧊 AR Experience Tips</h4>
+            <p><strong>View in 3D:</strong> Interact with the model on screen - rotate, zoom, and explore.<br>
+            <strong>View in AR:</strong> See the dish on your actual table! Point your camera at a flat surface and the dish will appear in real size (10-12 inches).</p>
+        </div>
+
+        <div id="recommendations-section" class="recommendations-section" style="display:none;">
+            <h3>🍔 Perfect Pairings</h3>
+            <div id="recommendations-list"></div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        const pId = new URLSearchParams(window.location.search).get('id');
+        const item = getItemById(pId);
+        let modelLoaded = false;
+
+        if (item) {
+            // Set Product Details
+            document.getElementById('p-name').innerText = item.name;
+            document.getElementById('p-price').innerText = `Rs. ${item.price}`;
+            document.getElementById('p-desc').innerText = item.description || "No description available.";
+
+            const visual = document.getElementById('visual-container');
+            
+            // ALWAYS show regular image first (fast loading!)
+            visual.innerHTML = `<img src="${item.image}" class="product-image" alt="${item.name}" loading="eager">`;
+            
+            // If 3D model exists, show buttons
+            if (item.model_glb) {
+                // Show badge
+                document.getElementById('product-badge').innerHTML = '<span class="product-badge">🧊 3D AR Available</span>';
+                
+                // Add AR overlay badge on image
+                visual.innerHTML += '<div class="ar-overlay-badge">🧊 3D Available</div>';
+                
+                // Show buttons
+                document.getElementById('btn-3d').classList.remove('hidden');
+                document.getElementById('btn-ar').classList.remove('hidden');
+                document.getElementById('ar-instructions').style.display = 'block';
+                
+                // View in 3D Button - Load model on demand
+                document.getElementById('btn-3d').onclick = () => {
+                    if (!modelLoaded) {
+                        loadModel();
+                    }
+                };
+                
+                // View in AR Button
+                document.getElementById('btn-ar').onclick = () => {
+                    if (!modelLoaded) {
+                        loadModel();
+                    }
+                    // Wait a moment for model to initialize, then activate AR
+                    setTimeout(() => {
+                        const modelViewer = document.querySelector('model-viewer');
+                        if (modelViewer) {
+                            modelViewer.activateAR();
+                        }
+                    }, 500);
+                };
+            }
+
+            // Function to load 3D model on demand
+            function loadModel() {
+                modelLoaded = true;
+                
+                // Show loading indicator
+                visual.innerHTML = `
+                    <div class="model-loading">
+                        <div class="spinner"></div>
+                        <p style="color: var(--text-light); font-weight: 600;">Loading 3D Model...</p>
+                    </div>
+                    <model-viewer 
+                        src="${item.model_glb}" 
+                        ios-src="${item.model_usdz}" 
+                        ar 
+                        ar-modes="scene-viewer webxr quick-look" 
+                        camera-controls 
+                        auto-rotate 
+                        shadow-intensity="1"
+                        exposure="0.8"
+                        camera-orbit="45deg 75deg 2m"
+                        loading="eager"
+                        ar-scale="fixed"
+                        scale="${item.ar_scale || '0.3 0.3 0.3'}"
+                        style="opacity: 0; transition: opacity 0.5s;">
+                        <!-- AR size controlled by ar_scale in data.js -->
+                        <div slot="ar-button" style="display:none;"></div>
+                    </model-viewer>
+                `;
+                
+                const modelViewer = document.querySelector('model-viewer');
+                
+                // When model loads, hide spinner and show model
+                modelViewer.addEventListener('load', () => {
+                    const loader = document.querySelector('.model-loading');
+                    if (loader) loader.remove();
+                    modelViewer.style.opacity = '1';
+                    
+                    // Update buttons
+                    document.getElementById('btn-3d').innerText = '🧊 3D View Active';
+                    document.getElementById('btn-3d').style.background = '#10b981';
+                });
+                
+                // Error handling
+                modelViewer.addEventListener('error', () => {
+                    visual.innerHTML = `
+                        <img src="${item.image}" class="product-image" alt="${item.name}">
+                        <div class="ar-overlay-badge" style="background: #fee; color: #e74c3c;">⚠️ 3D Model Error</div>
+                    `;
+                    showNotification('Failed to load 3D model. Showing image instead.');
+                });
+            }
+
+            // Add to Cart
+            document.getElementById('btn-add').onclick = () => {
+                addToCart(item.id);
+                const btn = document.getElementById('btn-add');
+                btn.innerText = '✅ Added to Cart!';
+                setTimeout(() => {
+                    btn.innerText = '🛒 Add to Order';
+                }, 2000);
+            };
+
+            // Show Recommendations
+            if (item.recommendations && item.recommendations.length > 0) {
+                document.getElementById('recommendations-section').style.display = 'block';
+                const recList = document.getElementById('recommendations-list');
+                
+                item.recommendations.forEach(recId => {
+                    const recItem = getItemById(recId);
+                    if (recItem) {
+                        recList.innerHTML += `
+                            <div class="recommendation-card">
+                                <img src="${recItem.image}" alt="${recItem.name}" loading="lazy">
+                                <div class="recommendation-info">
+                                    <h4>${recItem.name}</h4>
+                                    <p class="price">Rs. ${recItem.price}</p>
+                                </div>
+                                <button class="add-rec-btn" onclick="addToCart('${recItem.id}'); this.innerText='Added!'">
+                                    Add +
+                                </button>
+                            </div>
+                        `;
+                    }
+                });
+            }
+        } else {
+            document.querySelector('.product-content').innerHTML = '<h2>Product not found</h2>';
+        }
+    </script>
+</body>
+</html>

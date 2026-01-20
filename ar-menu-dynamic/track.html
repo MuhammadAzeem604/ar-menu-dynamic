@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Your Cart - Smart Menu</title>
+    <style>
+        .cart-page {
+            background: var(--bg);
+            min-height: 100vh;
+            padding-bottom: 120px;
+        }
+
+        .cart-header {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .cart-header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn-header {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 20px;
+            transition: transform 0.2s;
+        }
+
+        .back-btn-header:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-header h1 {
+            font-size: 1.5em;
+            color: var(--dark);
+        }
+
+        .cart-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .cart-item-card {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 10px var(--shadow);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .cart-item-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px var(--shadow-hover);
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .qty-display {
+            font-weight: 700;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .remove-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #fee;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: #e74c3c;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .recommendations-card {
+            background: linear-gradient(135deg, #FFF4ED 0%, #FFE5DC 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 2px solid #FFD6C4;
+        }
+
+        .recommendations-card h3 {
+            font-size: 1.4em;
+            color: var(--dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .rec-mini-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .rec-mini-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .rec-mini-card img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .rec-mini-card h4 {
+            font-size: 0.9em;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .rec-mini-card .price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        .rec-add-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-top: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .cart-summary {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 2px solid #f1f3f5;
+        }
+
+        .summary-label {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .summary-total {
+            font-size: 1.5em;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            font-size: 1.1em;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-cart-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-cart h2 {
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .empty-cart p {
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+
+        .clear-cart-btn {
+            background: transparent;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+
+        .clear-cart-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* Order Tracking Styles */
+        .status-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        #status-icon {
+            font-size: 100px;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+
+        #status-text {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .status-description {
+            color: var(--text-light);
+            font-size: 1.05em;
+        }
+
+        .status-timeline {
+            margin: 30px 0;
+            padding: 20px;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+
+        .timeline-step.active {
+            opacity: 1;
+        }
+
+        .timeline-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #f1f3f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .timeline-step.active .timeline-icon {
+            background: var(--gradient);
+        }
+
+        .timeline-text {
+            flex: 1;
+        }
+
+        .timeline-text h4 {
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .timeline-text p {
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body class="cart-page">
+    <div class="cart-header">
+        <div class="cart-header-content">
+            <a href="index.html" class="back-btn-header">←</a>
+            <h1 id="page-title">🛒 Your Cart (0)</h1>
+        </div>
+    </div>
+
+    <div class="cart-container" id="cart-content"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        const cartContent = document.getElementById('cart-content');
+        const urlParams = new URLSearchParams(window.location.search);
+        const isCheckout = urlParams.get('checkout') === 'true';
+
+        if (isCheckout) {
+            // Show Order Tracking
+            showOrderTracking();
+        } else {
+            // Show Editable Cart
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartItems = getCartWithQuantities();
+            const totalItems = cart.length;
+            
+            document.getElementById('page-title').innerHTML = `🛒 Your Cart (${totalItems})`;
+
+            if (totalItems === 0) {
+                cartContent.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h2>Your cart is empty</h2>
+                        <p>Add some delicious items to get started!</p>
+                        <a href="index.html" class="btn btn-primary">Browse Menu</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+
+            // Clear Cart Button
+            html += `
+                <button class="clear-cart-btn" onclick="clearCartWithConfirm()">
+                    🗑️ Clear All Items
+                </button>
+            `;
+
+            // Cart Items
+            cartItems.forEach(({ item, quantity }) => {
+                html += `
+                    <div class="cart-item-card" data-id="${item.id}">
+                        <img src="${item.image}" class="cart-item-image" alt="${item.name}">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">Rs. ${item.price} × ${quantity} = Rs. ${item.price * quantity}</div>
+                            <div class="quantity-controls">
+                                <button class="qty-btn" onclick="decreaseQuantity('${item.id}')">−</button>
+                                <span class="qty-display">${quantity}</span>
+                                <button class="qty-btn" onclick="increaseQuantity('${item.id}')">+</button>
+                            </div>
+                        </div>
+                        <button class="remove-btn" onclick="removeAllOfItem('${item.id}')">×</button>
+                    </div>
+                `;
+            });
+
+            // Smart Recommendations
+            const recommendations = getSmartRecommendations();
+            if (recommendations.length > 0) {
+                html += `
+                    <div class="recommendations-card">
+                        <h3>💡 Complete Your Meal</h3>
+                        <p style="color: var(--text-light); font-size: 0.95em;">Popular additions with your order:</p>
+                        <div class="recommendations-grid">
+                `;
+
+                recommendations.forEach(recItem => {
+                    html += `
+                        <div class="rec-mini-card">
+                            <img src="${recItem.image}" alt="${recItem.name}">
+                            <h4>${recItem.name}</h4>
+                            <div class="price">Rs. ${recItem.price}</div>
+                            <button class="rec-add-btn" onclick="addToCart('${recItem.id}'); renderCart();">
+                                Add +
+                            </button>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Cart Summary
+            const subtotal = calculateSubtotal();
+            const tax = Math.round(subtotal * 0.05);
+            const total = subtotal + tax;
+
+            html += `
+                <div class="cart-summary">
+                    <h3 style="margin-bottom: 15px;">📋 Order Summary</h3>
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal (${totalItems} items)</span>
+                        <span class="summary-value">Rs. ${subtotal}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Tax (5%)</span>
+                        <span class="summary-value">Rs. ${tax}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label" style="font-size: 1.2em; color: var(--dark); font-weight: 700;">Total</span>
+                        <span class="summary-value summary-total">Rs. ${total}</span>
+                    </div>
+                    <button class="btn btn-primary checkout-btn" onclick="proceedToCheckout()">
+                        Proceed to Checkout 🎉
+                    </button>
+                </div>
+            `;
+
+            cartContent.innerHTML = html;
+        }
+
+        function showOrderTracking() {
+            document.getElementById('page-title').innerHTML = '📦 Order Status';
+
+            const totalItems = cart.length;
+            if (totalItems === 0) {
+                cartContent.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h2>No active orders</h2>
+                        <p>Place an order to see it here!</p>
+                        <a href="index.html" class="btn btn-primary">Browse Menu</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const subtotal = calculateSubtotal();
+            const tax = Math.round(subtotal * 0.05);
+            const total = subtotal + tax;
+
+            cartContent.innerHTML = `
+                <div class="status-card">
+                    <div id="status-icon">⏳</div>
+                    <h2 id="status-text">Order Received</h2>
+                    <p class="status-description" id="status-description">We're preparing your delicious meal...</p>
+                    
+                    <div class="status-timeline">
+                        <div class="timeline-step active" id="step1">
+                            <div class="timeline-icon">✅</div>
+                            <div class="timeline-text">
+                                <h4>Order Placed</h4>
+                                <p>Your order has been received</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step" id="step2">
+                            <div class="timeline-icon">👨‍🍳</div>
+                            <div class="timeline-text">
+                                <h4>Preparing</h4>
+                                <p>Chef is cooking your food</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step" id="step3">
+                            <div class="timeline-icon">🍽️</div>
+                            <div class="timeline-text">
+                                <h4>Ready to Serve</h4>
+                                <p>Your meal is on the way!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cart-summary">
+                    <h3 style="margin-bottom: 15px;">📋 Your Order</h3>
+            `;
+
+            cart.forEach(item => {
+                cartContent.innerHTML += `
+                    <div class="summary-row">
+                        <span class="summary-label">${item.name}</span>
+                        <span class="summary-value">Rs. ${item.price}</span>
+                    </div>
+                `;
+            });
+
+            cartContent.innerHTML += `
+                    <div class="summary-row">
+                        <span class="summary-label">Tax (5%)</span>
+                        <span class="summary-value">Rs. ${tax}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label" style="font-size: 1.2em; color: var(--dark); font-weight: 700;">Total</span>
+                        <span class="summary-value summary-total">Rs. ${total}</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="index.html" class="btn btn-outline">Return to Menu</a>
+                </div>
+            `;
+
+            // Simulate status updates
+            setTimeout(() => {
+                document.getElementById('status-icon').innerText = "👨‍🍳";
+                document.getElementById('status-text').innerText = "Preparing Your Food";
+                document.getElementById('status-description').innerText = "Our chef is working on your order...";
+                document.getElementById('step2').classList.add('active');
+            }, 4000);
+
+            setTimeout(() => {
+                document.getElementById('status-icon').innerText = "✅";
+                document.getElementById('status-text').innerText = "Ready to Serve!";
+                document.getElementById('status-description').innerText = "Your delicious meal is ready!";
+                document.getElementById('step3').classList.add('active');
+            }, 10000);
+        }
+
+        // Helper Functions
+        function getCartWithQuantities() {
+            const itemMap = new Map();
+            cart.forEach(item => {
+                if (itemMap.has(item.id)) {
+                    itemMap.get(item.id).quantity++;
+                } else {
+                    itemMap.set(item.id, { item, quantity: 1 });
+                }
+            });
+            return Array.from(itemMap.values());
+        }
+
+        function calculateSubtotal() {
+            return cart.reduce((sum, item) => sum + item.price, 0);
+        }
+
+        function increaseQuantity(itemId) {
+            addToCart(itemId);
+            renderCart();
+            showNotification('Item added! 🎉');
+        }
+
+        function decreaseQuantity(itemId) {
+            const index = cart.findIndex(item => item.id === itemId);
+            if (index > -1) {
+                cart.splice(index, 1);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartUI();
+                renderCart();
+                showNotification('Item removed');
+            }
+        }
+
+        function removeAllOfItem(itemId) {
+            const item = getItemById(itemId);
+            if (confirm(`Remove all ${item.name} from cart?`)) {
+                cart = cart.filter(i => i.id !== itemId);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartUI();
+                renderCart();
+                showNotification('Items removed from cart');
+            }
+        }
+
+        function clearCartWithConfirm() {
+            if (confirm('Are you sure you want to clear your entire cart?')) {
+                clearCart();
+                renderCart();
+                showNotification('Cart cleared');
+            }
+        }
+
+        function getSmartRecommendations() {
+            const recommendedIds = new Set();
+            const currentIds = new Set(cart.map(item => item.id));
+
+            cart.forEach(item => {
+                if (item.recommendations) {
+                    item.recommendations.forEach(recId => {
+                        if (!currentIds.has(recId)) {
+                            recommendedIds.add(recId);
+                        }
+                    });
+                }
+            });
+
+            const recommendations = Array.from(recommendedIds)
+                .map(id => getItemById(id))
+                .filter(item => item !== null)
+                .slice(0, 6);
+
+            if (recommendations.length === 0) {
+                const popularIds = ['golden_fries', 'coca_cola', 'loaded_fries', 'fresh_lemonade'];
+                return popularIds
+                    .filter(id => !currentIds.has(id))
+                    .map(id => getItemById(id))
+                    .filter(item => item !== null)
+                    .slice(0, 4);
+            }
+
+            return recommendations;
+        }
+
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            window.location.href = 'track.html?checkout=true';
+        }
+    </script>
+</body>
+</html>

@@ -50,6 +50,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+            --poster-color: transparent; /* Added to prevent white flash */
         }
 
         .product-image {
@@ -306,7 +307,31 @@
             const visual = document.getElementById('visual-container');
             
             // ALWAYS show regular image first (fast loading!)
-            visual.innerHTML = `<img src="${item.image}" class="product-image" alt="${item.name}" loading="eager">`;
+            visual.innerHTML = `
+                <img src="${item.image}" class="product-image" alt="${item.name}" loading="eager" id="static-image">
+
+                ${item.model_glb ? `
+                <model-viewer
+                    id="ar-model-viewer"
+                    src="${item.model_glb}"
+                    ios-src="${item.model_usdz}"
+                    ar
+                    ar-modes="webxr scene-viewer quick-look"
+                    camera-controls
+                    auto-rotate
+                    shadow-intensity="1"
+                    exposure="0.8"
+                    camera-orbit="45deg 75deg 2m"
+                    loading="eager"
+                    preload
+                    ar-scale="auto"
+                    scale="${item.ar_scale || '0.3 0.3 0.3'}"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: -1; pointer-events: none; transition: opacity 0.35s ease;">
+                    <!-- iOS fallback: opens Quick Look directly if model-viewer AR has issues -->
+                    <a slot="ar-button" rel="ar" href="${item.model_usdz}#allowsContentScaling=1"></a>
+                </model-viewer>
+                ` : ''}
+            `;
             
             // If 3D model exists, show buttons
             if (item.model_glb) {
@@ -314,86 +339,89 @@
                 document.getElementById('product-badge').innerHTML = '<span class="product-badge">🧊 3D AR Available</span>';
                 
                 // Add AR overlay badge on image
-                visual.innerHTML += '<div class="ar-overlay-badge">🧊 3D Available</div>';
+                const badge = document.createElement('div');
+                badge.className = 'ar-overlay-badge';
+                badge.innerText = '🧊 3D Available';
+                visual.appendChild(badge);
                 
                 // Show buttons
                 document.getElementById('btn-3d').classList.remove('hidden');
                 document.getElementById('btn-ar').classList.remove('hidden');
                 document.getElementById('ar-instructions').style.display = 'block';
+
+                const modelViewer = document.getElementById('ar-model-viewer');
+
+                // Add event listeners once
+                if (modelViewer) {
+                     // Add AR status listener for debugging
+                    modelViewer.addEventListener('ar-status', (event) => {
+                        console.log('AR Status:', event.detail.status);
+                        if (event.detail.status === 'failed') {
+                            showNotification('AR failed to start. Please try again or check your device compatibility.');
+                        } else if (event.detail.status === 'not-presenting') {
+                            console.log('AR not presenting.');
+                        } else if (event.detail.status === 'session-started') {
+                            console.log('AR session started successfully!');
+                        }
+                    });
+
+                    modelViewer.addEventListener('load', () => {
+                         console.log('Model loaded!');
+                         modelLoaded = true;
+                    });
+                    
+                    modelViewer.addEventListener('error', (e) => {
+                        console.error('Model failed to load:', e);
+                        showNotification('Failed to load 3D model.');
+                    });
+                }
                 
-                // View in 3D Button - Load model on demand
+                // View in 3D Button - show/hide model-viewer (keep it loading even when hidden)
                 document.getElementById('btn-3d').onclick = () => {
-                    if (!modelLoaded) {
-                        loadModel();
+                    const mv = document.getElementById('ar-model-viewer');
+                    if (!mv) return;
+
+                    if (mv.style.opacity === '0' || mv.style.opacity === '') {
+                        mv.style.zIndex = '1';
+                        mv.style.pointerEvents = 'auto';
+                        mv.style.opacity = '1';
+                        document.getElementById('btn-3d').innerText = '🖼️ View Image';
+                        document.getElementById('btn-3d').style.background = '#6c757d';
+                    } else {
+                        mv.style.opacity = '0';
+                        mv.style.pointerEvents = 'none';
+                        setTimeout(() => { mv.style.zIndex = '-1'; }, 350);
+                        document.getElementById('btn-3d').innerText = 'View in 3D';
+                        document.getElementById('btn-3d').style.background = '';
                     }
                 };
-                
+
                 // View in AR Button
                 document.getElementById('btn-ar').onclick = () => {
-                    if (!modelLoaded) {
-                        loadModel();
-                    }
-                    // Wait a moment for model to initialize, then activate AR
-                    setTimeout(() => {
-                        const modelViewer = document.querySelector('model-viewer');
-                        if (modelViewer) {
-                            modelViewer.activateAR();
+                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                    
+                    if (isIOS && item.model_usdz) {
+                        // iOS Direct Quick Look Fallback
+                        // Create a temporary link to force native Quick Look
+                        const anchor = document.createElement('a');
+                        anchor.setAttribute('rel', 'ar');
+                        anchor.appendChild(document.createElement('img'));
+                        // Adding #allowsContentScaling=0 to prevent scale issues, can be 1 if needed
+                        anchor.setAttribute('href', item.model_usdz + "#allowsContentScaling=1&checkoutTitle=" + encodeURIComponent(item.name) + "&checkoutSubtitle=" + encodeURIComponent(item.description || "") + "&price=" + item.price);
+                        anchor.click();
+                    } else {
+                        // Android / Desktop Fallback
+                        const mv = document.getElementById('ar-model-viewer');
+                        if (mv) {
+                            mv.activateAR();
                         }
-                    }, 500);
+                    }
                 };
             }
 
-            // Function to load 3D model on demand
-            function loadModel() {
-                modelLoaded = true;
-                
-                // Show loading indicator
-                visual.innerHTML = `
-                    <div class="model-loading">
-                        <div class="spinner"></div>
-                        <p style="color: var(--text-light); font-weight: 600;">Loading 3D Model...</p>
-                    </div>
-                    <model-viewer 
-                        src="${item.model_glb}" 
-                        ios-src="${item.model_usdz}" 
-                        ar 
-                        ar-modes="scene-viewer webxr quick-look" 
-                        camera-controls 
-                        auto-rotate 
-                        shadow-intensity="1"
-                        exposure="0.8"
-                        camera-orbit="45deg 75deg 2m"
-                        loading="eager"
-                        ar-scale="fixed"
-                        scale="${item.ar_scale || '0.3 0.3 0.3'}"
-                        style="opacity: 0; transition: opacity 0.5s;">
-                        <!-- AR size controlled by ar_scale in data.js -->
-                        <div slot="ar-button" style="display:none;"></div>
-                    </model-viewer>
-                `;
-                
-                const modelViewer = document.querySelector('model-viewer');
-                
-                // When model loads, hide spinner and show model
-                modelViewer.addEventListener('load', () => {
-                    const loader = document.querySelector('.model-loading');
-                    if (loader) loader.remove();
-                    modelViewer.style.opacity = '1';
-                    
-                    // Update buttons
-                    document.getElementById('btn-3d').innerText = '🧊 3D View Active';
-                    document.getElementById('btn-3d').style.background = '#10b981';
-                });
-                
-                // Error handling
-                modelViewer.addEventListener('error', () => {
-                    visual.innerHTML = `
-                        <img src="${item.image}" class="product-image" alt="${item.name}">
-                        <div class="ar-overlay-badge" style="background: #fee; color: #e74c3c;">⚠️ 3D Model Error</div>
-                    `;
-                    showNotification('Failed to load 3D model. Showing image instead.');
-                });
-            }
+            // Function to load 3D model on demand (Depreciated/Inline now)
+            // function loadModel() { ... } removed as we load in HTML structure
+
 
             // Add to Cart
             document.getElementById('btn-add').onclick = () => {
